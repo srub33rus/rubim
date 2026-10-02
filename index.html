@@ -693,12 +693,10 @@ footer{border-top:1px solid var(--line);padding:42px 0;position:relative;z-index
 
 <script>
 /* ============================================================
-   ⚙️ TELEGRAM-БОТ — ВСЁ УЖЕ ВПИСАНО
-   Бот: @zacazibotsrub_bot
-   Получатель заявок: чат 7624632599 (@xirfe)
+   ️ НАСТРОЙКИ CLOUDFLARE WORKER
+   Заявки теперь идут через Worker, чтобы работать БЕЗ VPN.
    ============================================================ */
-var BOT_TOKEN = '8687054028:AAFhsB9wlx2rHcq8wi6FsVTeVIVUG-v9yds';
-var CHAT_ID   = '7624632599';
+var WORKER_URL = 'https://snowy-disk-b280.nz886572.workers.dev'; 
 /* ============================================================ */
 
 /* ---------- шапка уплотняется при скролле ---------- */
@@ -790,18 +788,12 @@ function copyText(text, okMsg){
 }
 function copyNumber(){ copyText('+7 920 910-48-81','Номер скопирован — вставьте в MAX Алексею или позвоните'); }
 
-/* ---------- ОТПРАВКА ЗАЯВКИ В TELEGRAM ---------- */
+/* ---------- ОТПРАВКА ЗАЯВКИ ЧЕРЕЗ CLOUDFLARE WORKER ---------- */
 function sendToTelegram(payload){
-  var url = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage';
-  return fetch(url, {
+  return fetch(WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: CHAT_ID,
-      text: payload,
-      parse_mode: 'HTML',
-      disable_web_page_preview: true
-    })
+    body: JSON.stringify({ message: payload })
   }).then(function(r){
     if(!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
@@ -863,7 +855,7 @@ document.getElementById('leadForm').addEventListener('submit', function(e){
       throw new Error((data && data.description) || 'Неизвестная ошибка');
     }
   }).catch(function(err){
-    console.error('[TG]', err);
+    console.error('[Worker]', err);
     status.textContent = '✗ Не удалось отправить автоматически. Скопировали текст заявки в буфер — вставьте его Алексею в MAX или WhatsApp.';
     status.className = 'form-status err';
     // fallback: копируем plain-версию текста в буфер
